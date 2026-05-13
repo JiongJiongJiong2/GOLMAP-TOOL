@@ -1,147 +1,216 @@
-# COLMAP Pipeline
-
-一个自动化的 3D 重建处理管道，用于从视频生成稀疏点云。
-
-## 功能
-
-- 从视频自动提取帧
-- COLMAP 特征提取
-- COLMAP 序列匹配
-- GLOMAP 稀疏重建
-- 导出 TXT 格式模型
-
-## 目录结构
-
 ```
-colmap-pipeline/
-├── data/
-│   ├── videos/          # 输入：放置视频文件
-│   └── scenes/          # 输出：重建结果
-├── tasks/
-│   ├── pipeline.py      # 核心处理管道
-│   └── __init__.py      # 模块导出
-├── tools/
-│   └── AutoTracker/
-│       ├── 01 GLOMAP/   # COLMAP + GLOMAP 工具
-│       ├── 03 FFMPEG/   # FFmpeg 工具
-│       └── 05 SCRIPT/   # 原始批处理脚本（可选）
-├── .gitignore
-├── LICENSE
-├── README.md
-└── requirements.txt
+ ██████╗  ██████╗ ██╗     ███╗   ███╗ █████╗ ██████╗ 
+██╔════╝ ██╔═══██╗██║     ████╗ ████║██╔══██╗██╔══██╗
+██║  ███╗██║   ██║██║     ██╔████╔██║███████║██████╔╝
+██║   ██║██║   ██║██║     ██║╚██╔╝██║██╔══██║██╔═══╝ 
+╚██████╔╝╚██████╔╝███████╗██║ ╚═╝ ██║██║  ██║██║     
+ ╚═════╝  ╚═════╝ ╚══════╝╚═╝     ╚═╝╚═╝  ╚═╝╚═╝     
+                                                     
+████████╗ ██████╗  ██████╗ ██╗                       
+╚══██╔══╝██╔═══██╗██╔═══██╗██║                       
+   ██║   ██║   ██║██║   ██║██║                       
+   ██║   ██║   ██║██║   ██║██║                       
+   ██║   ╚██████╔╝╚██████╔╝███████╗                  
+   ╚═╝    ╚═════╝  ╚═════╝ ╚══════╝                  
+  
 ```
 
-## 安装
+An automated 3D reconstruction pipeline that generates sparse point clouds from videos.
 
-### 1. 安装 Python 依赖
+## Features
+
+- Automatic frame extraction from videos (FFmpeg)
+- COLMAP feature extraction
+- COLMAP sequential matching
+- GLOMAP sparse reconstruction
+- Export models in TXT format
+
+## Quick Start
+
+### 1. Install Dependencies
 
 ```bash
 pip install -r requirements.txt
 ```
 
-### 2. 下载工具
+### 2. Download Tools
 
-本项目需要以下外部工具：
+This project requires the following external tools:
 
-- **COLMAP**: 从 [colmap.github.io](https://colmap.github.io/) 下载
-- **GLOMAP**: 从 [github.com/larsim/GLOMAP](https://github.com/larsim/GLOMAP) 下载
-- **FFmpeg**: 从 [ffmpeg.org](https://ffmpeg.org/download.html) 下载
+- **COLMAP**: Download from [colmap.github.io](https://colmap.github.io/)
+- **GLOMAP**: Download from [github.com/colmap/glomap](https://github.com/colmap/glomap)
+- **FFmpeg**: Download from [ffmpeg.org](https://ffmpeg.org/download.html)
 
-将工具放置到以下目录：
+Place the tools in the following directory structure:
 
 ```
 tools/AutoTracker/
 ├── 01 GLOMAP/
 │   ├── colmap.exe
 │   ├── glomap.exe
-│   └── *.dll (依赖库)
+│   └── *.dll (dependency libraries)
 └── 03 FFMPEG/
     └── bin/
         ├── ffmpeg.exe
         └── ffprobe.exe
 ```
 
-## 使用方法
+### 3. Place Your Video
 
-### 命令行
+Put your video files in the `data/videos/` directory:
 
-```bash
-# 处理单个视频
-python tasks/pipeline.py data/videos/your_video.mp4
-
-# 处理多个视频（使用 Python）
-from tasks import process_video
-
-result = process_video("data/videos/your_video.mp4")
-print(result)
+```
+data/videos/
+├── your_video.mp4
+├── another_video.mov
+└── ...
 ```
 
-### 作为模块使用
+Supported formats: `.mp4`, `.avi`, `.mov`, `.mkv`, `.wmv`, `.flv`, `.webm`
+
+### 4. Run the Pipeline
+
+**Important**: You must run from the project root directory!
+
+```bash
+# Navigate to project root
+cd E:\github\colmap pipline
+
+# Interactive mode (select video from list)
+python -m tasks
+
+# Or directly specify a video
+python -m tasks data/videos/your_video.mp4
+```
+
+### Interactive Mode
+
+When you run `python -m tasks` without arguments, you'll see an interactive menu:
+
+```
+  ██████╗  ██████╗ ██╗     ███╗   ███╗ █████╗ ██████╗ 
+██╔════╝ ██╔═══██╗██║     ████╗ ████║██╔══██╗██╔══██╗
+██║  ███╗██║   ██║██║     ██╔████╔██║███████║██████╔╝
+██║   ██║██║   ██║██║     ██║╚██╔╝██║██╔══██║██╔═══╝ 
+╚██████╔╝╚██████╔╝███████╗██║ ╚═╝ ██║██║  ██║██║     
+ ╚═════╝  ╚═════╝ ╚══════╝╚═╝     ╚═╝╚═╝  ╚═╝╚═╝     
+                                                     
+████████╗ ██████╗  ██████╗ ██╗                       
+╚══██╔══╝██╔═══██╗██╔═══██╗██║                       
+   ██║   ██║   ██║██║   ██║██║                       
+   ██║   ██║   ██║██║   ██║██║                       
+   ██║   ╚██████╔╝╚██████╔╝███████╗                  
+   ╚═╝    ╚═════╝  ╚═════╝ ╚══════╝                  
+  
+  3D Reconstruction Pipeline - Video to Sparse Point Cloud
+
+  Input:  Place your video files in: data/videos/
+  Output: Reconstruction results in: data/scenes/
+
+  Supported formats: .avi, .flv, .mkv, .mov, .mp4, .webm, .wmv
+------------------------------------------------------------
+
+  Videos found in data/videos/:
+
+    [1] my_video.mp4  (125.3 MB)
+    [2] drone_footage.mp4  (2.1 GB)
+
+  Select a video to process [1-2] or 'q' to quit:
+  > 
+```
+
+## Output Structure
+
+After processing, results are saved to `data/scenes/{scene_name}/`:
+
+```
+data/scenes/{scene_name}/
+├── images/              # Extracted video frames
+│   ├── frame_000001.jpg
+│   ├── frame_000002.jpg
+│   └── ...
+├── sparse/              # Sparse reconstruction results
+│   ├── 0/               # BIN format model
+│   │   ├── cameras.bin
+│   │   ├── images.bin
+│   │   └── points3D.bin
+│   ├── cameras.txt      # TXT format camera parameters
+│   ├── images.txt       # TXT format image info
+│   └── points3D.txt     # TXT format point cloud
+├── database.db          # COLMAP database
+└── status.json          # Processing status log
+```
+
+## Configuration
+
+| Parameter | Default | Description |
+|-----------|---------|-------------|
+| `ffmpeg_quality` | 2 | FFmpeg frame extraction quality (1-31, lower = better quality) |
+| `single_camera` | True | Assume all frames from the same camera |
+| `max_image_size` | 4096 | Maximum image size for feature extraction |
+| `sequential_overlap` | 15 | Overlap count for sequential matching |
+
+## Programmatic Usage
 
 ```python
 from tasks import GlomapPipeline, PipelineConfig
 
-# 自定义配置
+# Custom configuration
 config = PipelineConfig(
-    ffmpeg_quality=2,         # 视频帧质量 (1-31, 越小越好)
-    max_image_size=4096,      # 最大图像尺寸
-    sequential_overlap=15     # 序列匹配重叠数
+    ffmpeg_quality=2,         # Frame quality (1-31, lower = better)
+    max_image_size=4096,      # Max image size
+    sequential_overlap=15     # Sequential matching overlap
 )
 
-# 创建 Pipeline
+# Create pipeline
 pipeline = GlomapPipeline(
     video_path="data/videos/your_video.mp4",
     config=config,
     on_progress=lambda step, status, msg: print(f"[{step}] {status.value}: {msg}")
 )
 
-# 运行
+# Run
 result = pipeline.run()
 ```
 
-## 输出结果
-
-处理完成后，输出目录结构如下：
+## Project Structure
 
 ```
-data/scenes/{scene_name}/
-├── images/              # 提取的视频帧
-│   ├── frame_000001.jpg
-│   ├── frame_000002.jpg
-│   └── ...
-├── sparse/              # 稀疏重建结果
-│   ├── 0/               # BIN 格式模型
-│   │   ├── cameras.bin
-│   │   ├── images.bin
-│   │   └── points3D.bin
-│   ├── cameras.txt      # TXT 格式相机参数
-│   ├── images.txt       # TXT 格式图像信息
-│   └── points3D.txt     # TXT 格式点云
-├── database.db          # COLMAP 数据库
-└── status.json          # 处理状态记录
+colmap-pipeline/
+├── data/
+│   ├── videos/          # Input: place video files here
+│   └── scenes/          # Output: reconstruction results
+├── tasks/
+│   ├── __init__.py      # Module exports
+│   ├── __main__.py      # Module entry point
+│   ├── cli.py           # Command-line interface
+│   ├── config.py        # Configuration and data classes
+│   ├── pipeline.py      # Core pipeline class
+│   ├── runner.py        # Command execution utilities
+│   └── steps.py         # Individual step implementations
+├── tools/
+│   └── AutoTracker/
+│       ├── 01 GLOMAP/   # COLMAP + GLOMAP executables
+│       ├── 03 FFMPEG/   # FFmpeg executables
+│       └── 05 SCRIPT/   # Original batch scripts (optional)
+├── .gitignore
+├── LICENSE
+├── README.md
+└── requirements.txt
 ```
 
-## 配置参数
+## License
 
-| 参数 | 默认值 | 说明 |
-|------|--------|------|
-| `ffmpeg_quality` | 2 | FFmpeg 帧提取质量 (1-31, 越小质量越高) |
-| `single_camera` | True | 是否假设所有帧来自同一相机 |
-| `max_image_size` | 4096 | 特征提取最大图像尺寸 |
-| `sequential_overlap` | 15 | 序列匹配时相邻帧的重叠数 |
+MIT License - see [LICENSE](LICENSE)
 
-## 许可证
+## Acknowledgments
 
-MIT License - 详见 [LICENSE](LICENSE)
+- [COLMAP](https://colmap.github.io/) - Structure-from-Motion tool
+- [GLOMAP](https://github.com/colmap/glomap) - Global Structure-from-Motion
+- [FFmpeg](https://ffmpeg.org/) - Video processing tool
 
-## 致谢
+## Original Scripts
 
-- [COLMAP](https://colmap.github.io/) - Structure-from-Motion 工具
-- [GLOMAP](https://github.com/larsim/GLOMAP) - Global Structure-from-Motion
-- [FFmpeg](https://ffmpeg.org/) - 视频处理工具
+This project is based on polyfjord's AutoTracker batch scripts, rewritten as a Python automation pipeline.
 
-## 原始脚本
-
-本项目基于 polyfjord 的 AutoTracker 批处理脚本改写为 Python 自动化管道。
-
-原始脚本位于 `tools/AutoTracker/05 SCRIPT/AutoTracker_v1.4.bat`。
+Original scripts located at `tools/AutoTracker/05 SCRIPT/AutoTracker_v1.4.bat`.

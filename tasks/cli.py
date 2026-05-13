@@ -1,7 +1,7 @@
 """
-命令行入口
+Command-line entry point
 
-提供 Pipeline 的交互式命令行接口。
+Provides an interactive command-line interface for the Pipeline.
 """
 
 import os
@@ -12,10 +12,10 @@ from pathlib import Path
 from .config import PipelineConfig, StepStatus
 from .pipeline import process_video
 
-# 支持的视频格式
+# Supported video formats
 SUPPORTED_EXTENSIONS = {".mp4", ".avi", ".mov", ".mkv", ".wmv", ".flv", ".webm"}
 
-# ASCII 标题 (纯 ASCII 字符，兼容 Windows cmd)
+# ASCII banner (pure ASCII characters, compatible with Windows cmd)
 BANNER = r"""
  ██████╗  ██████╗ ██╗     ███╗   ███╗ █████╗ ██████╗ 
 ██╔════╝ ██╔═══██╗██║     ████╗ ████║██╔══██╗██╔══██╗
@@ -35,7 +35,7 @@ BANNER = r"""
 
 
 def get_video_size(video_path: Path) -> str:
-    """获取文件大小的可读字符串"""
+    """Get human-readable file size string"""
     size = video_path.stat().st_size
     if size < 1024:
         return f"{size} B"
@@ -48,7 +48,7 @@ def get_video_size(video_path: Path) -> str:
 
 
 def scan_videos(videos_dir: Path) -> list[Path]:
-    """扫描目录中的视频文件"""
+    """Scan directory for video files"""
     if not videos_dir.exists():
         return []
     
@@ -56,13 +56,13 @@ def scan_videos(videos_dir: Path) -> list[Path]:
     for ext in SUPPORTED_EXTENSIONS:
         videos.extend(videos_dir.glob(f"*{ext}"))
     
-    # 按文件名排序
+    # Sort by filename
     videos.sort(key=lambda p: p.name.lower())
     return videos
 
 
 def print_banner(config: PipelineConfig):
-    """打印欢迎信息和路径说明"""
+    """Print welcome message and path instructions"""
     base = Path(config.base_path)
     videos_dir = base / config.videos_dir
     scenes_dir = base / config.scenes_dir
@@ -80,14 +80,14 @@ def print_banner(config: PipelineConfig):
 
 def interactive_select(videos: list[Path], videos_dir: Path) -> Path | None:
     """
-    交互式选择视频文件
+    Interactive video file selection
     
     Args:
-        videos: 视频文件列表
-        videos_dir: 视频目录
+        videos: List of video files
+        videos_dir: Video directory
     
     Returns:
-        选中的视频路径，或 None 表示退出
+        Selected video path, or None to quit
     """
     if not videos:
         print()
@@ -101,7 +101,7 @@ def interactive_select(videos: list[Path], videos_dir: Path) -> Path | None:
         choice = safe_input().strip().lower()
         if choice == 'q':
             return None
-        return None  # 返回 None 让主循环重新扫描
+        return None  # Return None to let main loop re-scan
     
     print()
     print(f"  Videos found in {videos_dir}:")
@@ -130,7 +130,7 @@ def interactive_select(videos: list[Path], videos_dir: Path) -> Path | None:
 
 
 def safe_input(prompt: str = "") -> str:
-    """安全的 input()，处理 EOFError"""
+    """Safe input() that handles EOFError"""
     try:
         return input(prompt)
     except EOFError:
@@ -138,16 +138,16 @@ def safe_input(prompt: str = "") -> str:
 
 
 def main():
-    """命令行主函数"""
+    """Command-line main function"""
     config = PipelineConfig()
     
-    # 检查是否在交互终端中
+    # Check if running in interactive terminal
     if not sys.stdin.isatty() and len(sys.argv) < 2:
         print("Error: Interactive mode requires a terminal.")
         print("Usage: python -m tasks <video_path>")
         sys.exit(1)
     
-    # 如果传了参数，直接处理（跳过交互）
+    # If arguments provided, process directly (skip interactive mode)
     if len(sys.argv) >= 2:
         video_path = sys.argv[1]
         
@@ -164,7 +164,7 @@ def main():
             sys.exit(1)
         return
     
-    # 交互式模式
+    # Interactive mode
     base = Path(config.base_path)
     videos_dir = base / config.videos_dir
     
@@ -175,12 +175,12 @@ def main():
         selected = interactive_select(videos, videos_dir)
         
         if selected is None:
-            # 检查是否用户输入了 'q'
+            # User entered 'q' to quit
             print()
             print("  Goodbye!")
             sys.exit(0)
         
-        # 确认选择
+        # Confirm selection
         scene_name = selected.stem
         scenes_dir = base / config.scenes_dir / scene_name
         
@@ -194,7 +194,7 @@ def main():
         if confirm == 'c':
             continue
         
-        # 开始处理
+        # Start processing
         def progress_callback(step: str, status: StepStatus, message: str):
             print(f"  [{step}] {status.value}: {message}")
         

@@ -1,7 +1,7 @@
 """
-处理步骤实现
+Processing step implementations
 
-包含 Pipeline 的各个处理步骤函数。
+Contains individual processing step functions for the Pipeline.
 """
 
 import logging
@@ -22,20 +22,20 @@ def extract_frames(
     glomap_dir: Path
 ) -> Dict[str, Any]:
     """
-    步骤 1: 使用 FFmpeg 从视频提取帧
+    Step 1: Extract frames from video using FFmpeg
     
     Args:
-        video_path: 视频文件路径
-        images_dir: 输出图像目录
-        ffmpeg_exe: FFmpeg 可执行文件路径
-        ffmpeg_quality: 帧质量参数 (1-31)
-        scene_dir: 场景目录
-        glomap_dir: GLOMAP 目录
+        video_path: Video file path
+        images_dir: Output image directory
+        ffmpeg_exe: FFmpeg executable path
+        ffmpeg_quality: Frame quality parameter (1-31)
+        scene_dir: Scene directory
+        glomap_dir: GLOMAP directory
     
     Returns:
-        包含帧数量等信息的字典
+        Dictionary containing frame count and other info
     """
-    logger.info(f"提取视频帧: {video_path} -> {images_dir}")
+    logger.info(f"Extracting video frames: {video_path} -> {images_dir}")
     
     output_pattern = images_dir / "frame_%06d.jpg"
     
@@ -50,14 +50,14 @@ def extract_frames(
     
     run_command(cmd, "extract_frames", scene_dir, glomap_dir)
     
-    # 统计提取的帧数
+    # Count extracted frames
     frames = list(images_dir.glob("*.jpg"))
     frame_count = len(frames)
     
     if frame_count == 0:
-        raise RuntimeError("未能提取任何帧")
+        raise RuntimeError("No frames were extracted")
     
-    logger.info(f"成功提取 {frame_count} 帧")
+    logger.info(f"Successfully extracted {frame_count} frames")
     
     return {"frame_count": frame_count}
 
@@ -72,21 +72,21 @@ def run_feature_extraction(
     glomap_dir: Path
 ) -> Dict[str, Any]:
     """
-    步骤 2: 使用 COLMAP 进行特征提取
+    Step 2: Run COLMAP feature extraction
     
     Args:
-        database_path: COLMAP 数据库路径
-        images_dir: 图像目录
-        colmap_exe: COLMAP 可执行文件路径
-        single_camera: 是否假设单一相机
-        max_image_size: 最大图像尺寸
-        scene_dir: 场景目录
-        glomap_dir: GLOMAP 目录
+        database_path: COLMAP database path
+        images_dir: Image directory
+        colmap_exe: COLMAP executable path
+        single_camera: Whether to assume single camera
+        max_image_size: Maximum image size
+        scene_dir: Scene directory
+        glomap_dir: GLOMAP directory
     
     Returns:
-        特征提取相关信息
+        Feature extraction related info
     """
-    logger.info("运行 COLMAP 特征提取...")
+    logger.info("Running COLMAP feature extraction...")
     
     cmd = [
         str(colmap_exe),
@@ -110,19 +110,19 @@ def run_sequential_matching(
     glomap_dir: Path
 ) -> Dict[str, Any]:
     """
-    步骤 3: 使用 COLMAP 进行序列匹配
+    Step 3: Run COLMAP sequential matching
     
     Args:
-        database_path: COLMAP 数据库路径
-        colmap_exe: COLMAP 可执行文件路径
-        sequential_overlap: 序列匹配重叠数
-        scene_dir: 场景目录
-        glomap_dir: GLOMAP 目录
+        database_path: COLMAP database path
+        colmap_exe: COLMAP executable path
+        sequential_overlap: Sequential matching overlap count
+        scene_dir: Scene directory
+        glomap_dir: GLOMAP directory
     
     Returns:
-        匹配相关信息
+        Matching related info
     """
-    logger.info("运行 COLMAP 序列匹配...")
+    logger.info("Running COLMAP sequential matching...")
     
     cmd = [
         str(colmap_exe),
@@ -145,20 +145,20 @@ def run_glomap_mapper(
     glomap_dir: Path
 ) -> Dict[str, Any]:
     """
-    步骤 4: 使用 GLOMAP 进行稀疏重建
+    Step 4: Run GLOMAP sparse reconstruction
     
     Args:
-        database_path: COLMAP 数据库路径
-        images_dir: 图像目录
-        sparse_dir: 稀疏重建输出目录
-        glomap_exe: GLOMAP 可执行文件路径
-        scene_dir: 场景目录
-        glomap_dir: GLOMAP 目录
+        database_path: COLMAP database path
+        images_dir: Image directory
+        sparse_dir: Sparse reconstruction output directory
+        glomap_exe: GLOMAP executable path
+        scene_dir: Scene directory
+        glomap_dir: GLOMAP directory
     
     Returns:
-        重建相关信息
+        Reconstruction related info
     """
-    logger.info("运行 GLOMAP mapper...")
+    logger.info("Running GLOMAP mapper...")
     
     cmd = [
         str(glomap_exe),
@@ -170,10 +170,10 @@ def run_glomap_mapper(
     
     run_command(cmd, "glomap_mapper", scene_dir, glomap_dir)
     
-    # 检查输出
+    # Check output
     model_dir = sparse_dir / "0"
     if not model_dir.exists():
-        raise RuntimeError("GLOMAP 未生成重建结果")
+        raise RuntimeError("GLOMAP did not generate reconstruction results")
     
     return {"model_path": str(model_dir)}
 
@@ -185,27 +185,27 @@ def export_model(
     glomap_dir: Path
 ) -> Dict[str, Any]:
     """
-    步骤 5: 导出 TXT 格式模型
+    Step 5: Export model in TXT format
     
-    将 BIN 格式转换为 TXT 格式，便于其他工具读取。
+    Converts BIN format to TXT format for easier reading by other tools.
     
     Args:
-        sparse_dir: 稀疏重建目录
-        colmap_exe: COLMAP 可执行文件路径
-        scene_dir: 场景目录
-        glomap_dir: GLOMAP 目录
+        sparse_dir: Sparse reconstruction directory
+        colmap_exe: COLMAP executable path
+        scene_dir: Scene directory
+        glomap_dir: GLOMAP directory
     
     Returns:
-        导出相关信息
+        Export related info
     """
-    logger.info("导出 TXT 格式模型...")
+    logger.info("Exporting TXT format model...")
     
     model_dir = sparse_dir / "0"
     
     if not model_dir.exists():
-        raise RuntimeError(f"模型目录不存在: {model_dir}")
+        raise RuntimeError(f"Model directory does not exist: {model_dir}")
     
-    # 导出到模型目录内
+    # Export to model directory
     cmd = [
         str(colmap_exe),
         "model_converter",
@@ -216,7 +216,7 @@ def export_model(
     
     run_command(cmd, "export_model", scene_dir, glomap_dir)
     
-    # 同时导出到 sparse 目录（兼容性）
+    # Also export to sparse directory (for compatibility)
     cmd_sparse = [
         str(colmap_exe),
         "model_converter",
@@ -228,8 +228,8 @@ def export_model(
     try:
         run_command(cmd_sparse, "export_model_sparse", scene_dir, glomap_dir)
     except Exception:
-        # 这个步骤失败不影响整体结果
-        logger.warning("导出到 sparse 目录失败，但不影响主要结果")
+        # This step failing doesn't affect the main result
+        logger.warning("Export to sparse directory failed, but main result is unaffected")
     
     return {
         "model_dir": str(model_dir),

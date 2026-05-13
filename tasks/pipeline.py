@@ -1,12 +1,12 @@
 """
-GLOMAP Pipeline - 3D 重建处理管道
+GLOMAP Pipeline - 3D Reconstruction Pipeline
 
-该模块实现了从视频到稀疏点云的自动化处理流程：
-1. 视频帧提取 (FFmpeg)
-2. 特征提取 (COLMAP)
-3. 特征匹配 (COLMAP)
-4. 稀疏重建 (GLOMAP)
-5. 模型导出 (COLMAP)
+This module implements an automated processing pipeline from video to sparse point cloud:
+1. Video frame extraction (FFmpeg)
+2. Feature extraction (COLMAP)
+3. Feature matching (COLMAP)
+4. Sparse reconstruction (GLOMAP)
+5. Model export (COLMAP)
 """
 
 import json
@@ -25,14 +25,14 @@ logger = logging.getLogger(__name__)
 
 class GlomapPipeline:
     """
-    GLOMAP 自动化处理管道
+    GLOMAP Automated Processing Pipeline
     
-    处理流程：
-    1. 从视频提取帧
-    2. COLMAP 特征提取
-    3. COLMAP 序列匹配
-    4. GLOMAP 稀疏重建
-    5. 导出 TXT 格式模型
+    Processing flow:
+    1. Extract frames from video
+    2. COLMAP feature extraction
+    3. COLMAP sequential matching
+    4. GLOMAP sparse reconstruction
+    5. Export TXT format model
     """
     
     def __init__(
@@ -42,47 +42,47 @@ class GlomapPipeline:
         on_progress: Optional[Callable[[str, StepStatus, str], None]] = None
     ):
         """
-        初始化 Pipeline
+        Initialize Pipeline
         
         Args:
-            video_path: 视频文件路径（绝对路径或相对于 videos_dir 的路径）
-            config: Pipeline 配置
-            on_progress: 进度回调函数 (step_name, status, message)
+            video_path: Video file path (absolute or relative to videos_dir)
+            config: Pipeline configuration
+            on_progress: Progress callback function (step_name, status, message)
         """
         self.config = config or PipelineConfig()
         self.on_progress = on_progress
         self.results: list[StepResult] = []
         
-        # 解析视频路径
+        # Parse video path
         self._setup_paths(video_path)
         
-        # 验证工具是否存在
+        # Validate tools exist
         self._validate_tools()
     
     def _setup_paths(self, video_path: str):
-        """设置所有相关路径"""
+        """Set up all related paths"""
         base = Path(self.config.base_path)
         autotracker = base / self.config.autotracker_dir
         
-        # 工具路径
+        # Tool paths
         self.glomap_dir = autotracker / "01 GLOMAP"
         self.ffmpeg_dir = autotracker / "03 FFMPEG"
         
-        # 数据路径
+        # Data paths
         self.videos_dir = base / self.config.videos_dir
         self.scenes_dir = base / self.config.scenes_dir
         
-        # 视频文件路径
+        # Video file path
         video_path = Path(video_path)
         if video_path.is_absolute():
             self.video_path = video_path
         else:
             self.video_path = self.videos_dir / video_path
         
-        # 场景名称（视频文件名，不含扩展名）
+        # Scene name (video filename without extension)
         self.scene_name = self.video_path.stem
         
-        # 场景目录结构
+        # Scene directory structure
         self.scene_dir = self.scenes_dir / self.scene_name
         self.images_dir = self.scene_dir / "images"
         self.sparse_dir = self.scene_dir / "sparse"
@@ -90,21 +90,21 @@ class GlomapPipeline:
         self.status_file = self.scene_dir / "status.json"
     
     def _validate_tools(self):
-        """验证所需工具是否存在"""
+        """Validate required tools exist"""
         self.tools = validate_tools(self.glomap_dir, self.ffmpeg_dir)
         
-        # 验证视频文件
+        # Validate video file
         if not self.video_path.exists():
-            raise FileNotFoundError(f"视频文件不存在: {self.video_path}")
+            raise FileNotFoundError(f"Video file not found: {self.video_path}")
     
     def _update_progress(self, step_name: str, status: StepStatus, message: str = ""):
-        """更新进度"""
+        """Update progress"""
         logger.info(f"[{step_name}] {status.value}: {message}")
         if self.on_progress:
             self.on_progress(step_name, status, message)
     
     def _save_status(self):
-        """保存当前状态到文件"""
+        """Save current status to file"""
         status = {
             "scene_name": self.scene_name,
             "video_path": str(self.video_path),
@@ -118,14 +118,14 @@ class GlomapPipeline:
     
     def _execute_step(self, step_name: str, step_func: Callable) -> StepResult:
         """
-        执行单个步骤
+        Execute a single step
         
         Args:
-            step_name: 步骤名称
-            step_func: 步骤执行函数
+            step_name: Step name
+            step_func: Step execution function
         
         Returns:
-            StepResult 对象
+            StepResult object
         """
         result = StepResult(
             step_name=step_name,
@@ -138,10 +138,10 @@ class GlomapPipeline:
         try:
             details = step_func()
             result.status = StepStatus.COMPLETED
-            result.message = "成功"
+            result.message = "Success"
             result.details = details or {}
             result.end_time = datetime.now()
-            self._update_progress(step_name, StepStatus.COMPLETED, "成功")
+            self._update_progress(step_name, StepStatus.COMPLETED, "Success")
             
         except Exception as e:
             result.status = StepStatus.FAILED
@@ -158,27 +158,27 @@ class GlomapPipeline:
     
     def run(self, resume: bool = False) -> Dict[str, Any]:
         """
-        执行完整的处理流程
+        Execute the complete processing pipeline
         
         Args:
-            resume: 是否从上次失败的步骤继续
+            resume: Whether to resume from last failed step
         
         Returns:
-            处理结果字典
+            Processing result dictionary
         """
-        logger.info(f"开始处理视频: {self.video_path}")
-        logger.info(f"场景目录: {self.scene_dir}")
+        logger.info(f"Starting video processing: {self.video_path}")
+        logger.info(f"Scene directory: {self.scene_dir}")
         
-        # 检查是否已存在
+        # Check if already exists
         if self.scene_dir.exists() and not resume:
-            logger.warning(f"场景目录已存在，将覆盖: {self.scene_dir}")
+            logger.warning(f"Scene directory already exists, will overwrite: {self.scene_dir}")
             shutil.rmtree(self.scene_dir)
         
-        # 创建目录结构
+        # Create directory structure
         self.images_dir.mkdir(parents=True, exist_ok=True)
         self.sparse_dir.mkdir(parents=True, exist_ok=True)
         
-        # 定义处理步骤
+        # Define processing steps
         step_funcs = [
             ("extract_frames", self._step_extract_frames),
             ("feature_extraction", self._step_feature_extraction),
@@ -187,11 +187,11 @@ class GlomapPipeline:
             ("export_model", self._step_export_model),
         ]
         
-        # 执行步骤
+        # Execute steps
         for step_name, step_func in step_funcs:
             self._execute_step(step_name, step_func)
         
-        logger.info(f"处理完成: {self.scene_name}")
+        logger.info(f"Processing complete: {self.scene_name}")
         
         return {
             "success": True,
@@ -202,10 +202,10 @@ class GlomapPipeline:
             "steps": [r.to_dict() for r in self.results]
         }
     
-    # === 步骤包装方法 ===
+    # === Step wrapper methods ===
     
     def _step_extract_frames(self) -> Dict[str, Any]:
-        """步骤 1: 提取帧"""
+        """Step 1: Extract frames"""
         return steps.extract_frames(
             video_path=self.video_path,
             images_dir=self.images_dir,
@@ -216,7 +216,7 @@ class GlomapPipeline:
         )
     
     def _step_feature_extraction(self) -> Dict[str, Any]:
-        """步骤 2: 特征提取"""
+        """Step 2: Feature extraction"""
         return steps.run_feature_extraction(
             database_path=self.database_path,
             images_dir=self.images_dir,
@@ -228,7 +228,7 @@ class GlomapPipeline:
         )
     
     def _step_sequential_matching(self) -> Dict[str, Any]:
-        """步骤 3: 序列匹配"""
+        """Step 3: Sequential matching"""
         return steps.run_sequential_matching(
             database_path=self.database_path,
             colmap_exe=self.tools["colmap"],
@@ -238,7 +238,7 @@ class GlomapPipeline:
         )
     
     def _step_glomap_mapper(self) -> Dict[str, Any]:
-        """步骤 4: GLOMAP 重建"""
+        """Step 4: GLOMAP reconstruction"""
         return steps.run_glomap_mapper(
             database_path=self.database_path,
             images_dir=self.images_dir,
@@ -249,7 +249,7 @@ class GlomapPipeline:
         )
     
     def _step_export_model(self) -> Dict[str, Any]:
-        """步骤 5: 导出模型"""
+        """Step 5: Export model"""
         return steps.export_model(
             sparse_dir=self.sparse_dir,
             colmap_exe=self.tools["colmap"],
@@ -264,15 +264,15 @@ def process_video(
     on_progress: Optional[Callable[[str, StepStatus, str], None]] = None
 ) -> Dict[str, Any]:
     """
-    处理视频的便捷函数
+    Convenience function for processing video
     
     Args:
-        video_path: 视频文件路径
-        config: Pipeline 配置
-        on_progress: 进度回调函数
+        video_path: Video file path
+        config: Pipeline configuration
+        on_progress: Progress callback function
     
     Returns:
-        处理结果字典
+        Processing result dictionary
     """
     pipeline = GlomapPipeline(video_path, config, on_progress)
     return pipeline.run()

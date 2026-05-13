@@ -1,7 +1,7 @@
 """
-命令执行工具
+Command execution utilities
 
-提供可执行文件查找和命令运行的工具函数。
+Provides utility functions for finding executables and running commands.
 """
 
 import os
@@ -15,44 +15,44 @@ logger = logging.getLogger(__name__)
 
 def find_executable(base_dir: Path, exe_name: str) -> Path:
     """
-    查找可执行文件
+    Find an executable file
     
     Args:
-        base_dir: 基础目录
-        exe_name: 可执行文件名
+        base_dir: Base directory
+        exe_name: Executable file name
     
     Returns:
-        可执行文件的完整路径
+        Full path to the executable
     
     Raises:
-        FileNotFoundError: 找不到可执行文件
+        FileNotFoundError: Executable not found
     """
-    # 直接在目录下查找
+    # Search directly in the directory
     direct = base_dir / exe_name
     if direct.exists():
         return direct
     
-    # 在 bin 子目录下查找
+    # Search in bin subdirectory
     in_bin = base_dir / "bin" / exe_name
     if in_bin.exists():
         return in_bin
     
-    raise FileNotFoundError(f"找不到可执行文件: {exe_name}，在 {base_dir}")
+    raise FileNotFoundError(f"Executable not found: {exe_name} in {base_dir}")
 
 
 def validate_tools(glomap_dir: Path, ffmpeg_dir: Path) -> dict:
     """
-    验证所需工具是否存在
+    Validate that required tools exist
     
     Args:
-        glomap_dir: GLOMAP 目录
-        ffmpeg_dir: FFmpeg 目录
+        glomap_dir: GLOMAP directory
+        ffmpeg_dir: FFmpeg directory
     
     Returns:
-        包含各工具路径的字典
+        Dictionary containing paths to each tool
     
     Raises:
-        FileNotFoundError: 缺少必要工具
+        FileNotFoundError: Missing required tool
     """
     tools = {
         "ffmpeg": find_executable(ffmpeg_dir, "ffmpeg.exe"),
@@ -71,31 +71,31 @@ def run_command(
     env: Optional[dict] = None
 ) -> subprocess.CompletedProcess:
     """
-    执行命令
+    Execute a command
     
     Args:
-        cmd: 命令参数列表
-        step_name: 步骤名称（用于日志）
-        cwd: 工作目录
-        glomap_dir: GLOMAP 目录（用于添加到 PATH）
-        env: 额外的环境变量
+        cmd: Command argument list
+        step_name: Step name (for logging)
+        cwd: Working directory
+        glomap_dir: GLOMAP directory (to add to PATH)
+        env: Additional environment variables
     
     Returns:
-        CompletedProcess 对象
+        CompletedProcess object
     
     Raises:
-        subprocess.CalledProcessError: 命令执行失败
+        subprocess.CalledProcessError: Command execution failed
     """
-    # 合并环境变量
+    # Merge environment variables
     run_env = os.environ.copy()
     if env:
         run_env.update(env)
     
-    # 添加 GLOMAP 目录到 PATH
+    # Add GLOMAP directory to PATH
     if glomap_dir:
         run_env["PATH"] = f"{glomap_dir};{glomap_dir / 'bin'};{run_env.get('PATH', '')}"
     
-    logger.debug(f"执行命令: {' '.join(str(c) for c in cmd)}")
+    logger.debug(f"Executing command: {' '.join(str(c) for c in cmd)}")
     
     result = subprocess.run(
         cmd,
@@ -106,8 +106,8 @@ def run_command(
     )
     
     if result.returncode != 0:
-        error_msg = result.stderr or result.stdout or "未知错误"
-        logger.error(f"[{step_name}] 命令执行失败: {error_msg}")
+        error_msg = result.stderr or result.stdout or "Unknown error"
+        logger.error(f"[{step_name}] Command failed: {error_msg}")
         raise subprocess.CalledProcessError(
             result.returncode, cmd, result.stdout, result.stderr
         )

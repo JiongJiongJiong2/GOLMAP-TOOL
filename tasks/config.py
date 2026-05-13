@@ -1,7 +1,7 @@
 """
-Pipeline 配置和数据类
+Pipeline configuration and data classes
 
-包含 Pipeline 运行所需的配置参数和数据结构。
+Contains configuration parameters and data structures required for Pipeline execution.
 """
 
 import logging
@@ -15,7 +15,7 @@ logger = logging.getLogger(__name__)
 
 
 class StepStatus(Enum):
-    """处理步骤状态"""
+    """Processing step status"""
     PENDING = "pending"
     RUNNING = "running"
     COMPLETED = "completed"
@@ -25,36 +25,36 @@ class StepStatus(Enum):
 
 @dataclass
 class PipelineConfig:
-    """Pipeline 配置"""
-    # 基础路径
+    """Pipeline configuration"""
+    # Base path
     base_path: str = ""
     
-    # 工具路径（相对于 base_path）
+    # Tool paths (relative to base_path)
     autotracker_dir: str = "tools/AutoTracker"
     
-    # 数据路径（相对于 base_path）
+    # Data paths (relative to base_path)
     videos_dir: str = "data/videos"
     scenes_dir: str = "data/scenes"
     
-    # FFmpeg 参数
-    ffmpeg_quality: int = 2  # -qscale:v 参数，1-31，越小质量越高
+    # FFmpeg parameters
+    ffmpeg_quality: int = 2  # -qscale:v parameter, 1-31, lower = better quality
     
-    # COLMAP 特征提取参数
+    # COLMAP feature extraction parameters
     single_camera: bool = True
     max_image_size: int = 4096
     
-    # COLMAP 序列匹配参数
+    # COLMAP sequential matching parameters
     sequential_overlap: int = 15
     
     def __post_init__(self):
         if not self.base_path:
-            # 默认使用项目根目录作为基础路径
+            # Default to project root directory as base path
             self.base_path = str(Path(__file__).parent.parent)
 
 
 @dataclass
 class StepResult:
-    """步骤执行结果"""
+    """Step execution result"""
     step_name: str
     status: StepStatus
     message: str = ""

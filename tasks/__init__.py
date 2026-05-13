@@ -1,14 +1,14 @@
 """
-Tasks 模块
+Tasks module
 
-包含 GLOMAP 处理管道的核心功能。
+Contains core functionality for the GLOMAP processing pipeline.
 """
 
 from .config import PipelineConfig, StepStatus, StepResult
 from .pipeline import GlomapPipeline, process_video
 
 __all__ = [
-    # Pipeline 类和配置
+    # Pipeline class and configuration
     "GlomapPipeline",
     "PipelineConfig",
     "StepStatus",

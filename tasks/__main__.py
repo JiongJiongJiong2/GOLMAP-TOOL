@@ -1,7 +1,7 @@
 """
-模块入口
+Module entry point
 
-支持通过 python -m tasks 运行命令行。
+Allows running the pipeline via: python -m tasks
 """
 
 from .cli import main
