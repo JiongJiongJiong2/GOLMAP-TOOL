@@ -1,0 +1,6 @@
+# COLMAP Pipeline Dependencies
+# 核心依赖（无第三方包，仅使用 Python 标准库）
+
+# 可选：如果需要异步任务支持
+# celery>=5.3.0
+# redis>=4.5.0

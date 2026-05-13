@@ -1,0 +1,52 @@
+# Python
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+*.egg-info/
+dist/
+build/
+.eggs/
+*.egg
+
+# Virtual environments
+venv/
+.venv/
+env/
+
+# IDE
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+
+# Data directories (输入输出) - 保留 .gitkeep
+data/videos/*
+!data/videos/.gitkeep
+data/scenes/*
+!data/scenes/.gitkeep
+
+# AutoTracker 数据目录
+tools/AutoTracker/02 VIDEOS/
+tools/AutoTracker/04 SCENES/
+
+# 大型二进制工具（用户需自行下载）
+# 如需包含工具，取消下面的注释
+# tools/AutoTracker/01 GLOMAP/*.exe
+# tools/AutoTracker/01 GLOMAP/*.dll
+# tools/AutoTracker/03 FFMPEG/bin/
+
+# OS
+.DS_Store
+Thumbs.db
+Desktop.ini
+
+# Logs
+*.log
+
+# Database files (COLMAP 生成)
+*.db
+
+# Status files
+status.json

@@ -59,7 +59,7 @@ class PipelineConfig:
     
     def __post_init__(self):
         if not self.base_path:
-            # 默认使用 backend/app 作为基础路径
+            # 默认使用项目根目录作为基础路径
             self.base_path = str(Path(__file__).parent.parent)
 
 
