@@ -1,6 +1,6 @@
 # COLMAP Pipeline Dependencies
-# This project uses only Python standard library modules.
-# No third-party packages required.
+# This project uses only Python standard library modules for runtime.
+# No third-party runtime packages required.
 
 # Python version: >=3.10
 
@@ -12,6 +12,6 @@
 # - datetime
 # - typing
 
-# Development dependencies (optional, for testing/linting):
-# flake8>=6.0.0
-# pytest>=7.0.0
+# Development dependencies
+pytest>=7.0.0
+flake8>=6.0.0
