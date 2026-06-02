@@ -1,6 +1,17 @@
 # COLMAP Pipeline Dependencies
-# 核心依赖（无第三方包，仅使用 Python 标准库）
+# This project uses only Python standard library modules.
+# No third-party packages required.
 
-# 可选：如果需要异步任务支持
-# celery>=5.3.0
-# redis>=4.5.0
+# Python version: >=3.10
+
+# Standard library modules used:
+# - os, sys, json, shutil, logging, subprocess
+# - pathlib
+# - dataclasses
+# - enum
+# - datetime
+# - typing
+
+# Development dependencies (optional, for testing/linting):
+# flake8>=6.0.0
+# pytest>=7.0.0
